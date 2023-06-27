@@ -2,7 +2,7 @@
 
 ### Overture
 
-At Club Steingart and CEEC we are so fortunate to have access to pretty much every piece of battery testing instrument there is, including at least five types of battery cyclers. As we'd say in the northern Atlantic ocean would say: _Sá galli er á gjöf Njarðar_, namely that loading, parsing, and analyzing data from such a variety of sources—each OEM seems to revel in creating a proprietary format—can be verbose.
+At Club Steingart and CEEC we are so fortunate to have access to pretty much every piece of battery testing instrument there is, including at least five types of battery cyclers. However, loading, parsing, and analyzing data from such a variety of sources—each OEM seems to revel in creating their own proprietary format—can be a suboptimal experience.
 
 To ameliorate this, we have this abstraction called `singular`. It achieves two things:
 
@@ -25,7 +25,7 @@ Just change `id_` to match your needs. No absolute path. No specifying file type
 
 ### Cyclers
 
-As of June 26, 2023, `singular` handles the following cyclers:
+At the time of writing, `singular` handles the following cyclers:
 
 - `biologic`
 - `ivium`
@@ -73,8 +73,3 @@ On `squidstats`, it will first look for a column called `UTC Time (s)`. In case 
 
 
 > 🌸 I will do my absolute best to maintain this with backwards compatibility in mind. However, I assume no responsibility for code suddenly breaking in case I make changes. As such, and if you think you’ll use this heavily, it may be a good idea to fork the pithy script.
-
-
-### Logs
-
-June 26, 2023 Manual created
