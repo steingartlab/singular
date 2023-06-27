@@ -5,14 +5,14 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 from galvani import BioLogic
 import numpy as np
 import pandas as pd
 
 from src.anyware import Anyware
-import src.utils as utils
+from src import utils
 
 
 @dataclass
@@ -22,7 +22,7 @@ class Mapper:
     time: str
     voltage: str
     current: str
-    cycle: str = None
+    cycle: str
 
     capacity: Optional[str] = None
     dcapacity: Optional[str] = None
@@ -35,9 +35,9 @@ class Mapper:
 class Cycler(ABC):
     """"""
     def __init__(self, mapper: Optional[Mapper] = None, fileformat: Optional[str] = None):
-        self.mapper: Mapper = mapper
-        self.fileformat: str = fileformat
-        self._timeseries: pd.DataFrame = None
+        self.mapper: Optional[Mapper] = mapper
+        self.fileformat: Optional[str] = fileformat
+        self._timeseries: pd.DataFrame
 
     @property
     def timeseries(self) -> pd.DataFrame:
@@ -66,13 +66,13 @@ class Biologic(Cycler):
     def parse(self):
         self._parse()
         self._timeseries['cycle'] //= 2
-        self._timeseries['dcapacity'] = self._timeseries['capacity'].apply(lambda x: x if x < 0 else 0)  # Lambda is the most unreadable stuff ever, but is reasonably readable here
+        self._timeseries['dcapacity'] = self._timeseries['capacity'].apply(lambda x: x if x < 0 else 0)
         self._timeseries['capacity'] = self._timeseries['capacity'].apply(lambda x: x if x > 0 else 0)
 
 
 class Ivium(Cycler):
+    """Credit to Andrew Wang."""
     def load(self, path):
-        """Credit to Andrew Wang."""
         
         self.raw_data = open(
             path,
@@ -98,7 +98,7 @@ class Ivium(Cycler):
         )
         self._timeseries.set_index('time', inplace=True)
 
-        fix_cycle(self._timeseries)
+        utils.fix_cycle(self._timeseries)
 
 
 class Neware(Cycler):
@@ -118,18 +118,3 @@ class Squidstat(Cycler):
 
     def parse(self):
         self._parse()
-
-
-def find_cycler(cyclers: Tuple[Cycler, ...], id_: str) -> Tuple[Cycler, str]:
-    for cycler in cyclers:
-        filename = f'{id_}.{cycler.fileformat}'
-        path = utils.find_experiment(filename)
-
-        if path is not None:
-            break
-
-    if path is None:
-        path = id_
-        cycler = neware
-
-    return cycler, path

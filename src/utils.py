@@ -33,4 +33,5 @@ def fix_cycle(timeseries: pd.DataFrame, column: str = 'current', threshold: floa
     
     difference = timeseries.diff()
     boolean = np.array(difference[column] > threshold)
-    timeseries['cycle'] = np.cumsum(boolean) // 2  # //2 bc we are only interested in cycle changes, not step changes from OCP to CC
+    # //2 bc we are only interested in cycle changes, not step changes from OCP to CC
+    timeseries['cycle'] = np.cumsum(boolean) // 2 

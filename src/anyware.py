@@ -292,7 +292,7 @@ class Anyware:
             try:
                 data.set_index(time_col, inplace=True)
                 return data
-            except:
+            except KeyError:
                 continue
 
         return data
