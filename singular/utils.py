@@ -1,34 +1,53 @@
+import json
 import os
-from typing import Union
+from pathlib import Path
 
-from dotenv import dotenv_values
 import numpy as np
 import pandas as pd
 
+with open('config.json', 'r') as file:
+    config = json.load(file)
 
-config: dict[str, str] = dotenv_values('.env')
 base_directory: str = config['base_directory']
 
 
-def find_experiment(filename: str) -> Union[str, None]:
+def find_experiment(filename: str) -> Path:
+    """Searches recursively for file with name that matches.
+
+    Args:
+        filename (str): Experiment ID + file ending.
+
+    Raises:
+        FileNotFoundError: If no file with filename is found.
+
+    Returns:
+        Path: To file containing experiment.
+    """
+
+
     for root, _, files in os.walk(base_directory):
+
         if filename not in files:
             continue
-        
-        return os.path.join(root, filename)
+
+        return Path(root, filename)
     
-def fix_cycle(timeseries: pd.DataFrame, column: str = 'current', threshold: float = 0.001) -> None:
+    raise FileNotFoundError(f'No filename matches the id_ {filename}.')
+    
+
+def fix_cycle(timeseries: pd.DataFrame, column: str = 'current', threshold: float = 1e-3) -> None:
     '''The raw anyware data doesn't have the typical cycle number in the case
     of anything more complicated than CC/CC.
     
-    Neware is stupid.
+    This fixes it in the case of alternating CC/OCV steps. Not perfect, but good enough
+    for all of my applications!
     
     Args:
         timeseries (pd.DataFrame): Electrochemical data as received from anyware.
         column (str, optional): The column to detect changes on.
             Defaults to 'current'.
         threshold (float, optional): The threshold upon which we assume cycle is changing.
-            Defaults to 0.001.
+            Defaults to 1e-3.
     '''
     
     difference = timeseries.diff()

@@ -5,14 +5,14 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 from galvani import BioLogic
 import numpy as np
 import pandas as pd
 
-from src.anyware import Anyware
-from src import utils
+from singular import utils, anyware
 
 
 @dataclass
@@ -20,10 +20,10 @@ class Mapper:
     """Map original field names to standardized column names."""
     
     time: str
-    voltage: str
     current: str
-    cycle: str
+    voltage: str
 
+    cycle: Optional[str] = None
     capacity: Optional[str] = None
     dcapacity: Optional[str] = None
 
@@ -33,18 +33,18 @@ class Mapper:
 
 
 class Cycler(ABC):
-    """"""
-    def __init__(self, mapper: Optional[Mapper] = None, fileformat: Optional[str] = None):
-        self.mapper: Optional[Mapper] = mapper
-        self.fileformat: Optional[str] = fileformat
-        self._timeseries: pd.DataFrame
+    """Base class for all cyclers, i.e. they should all follow this structure."""
+    def __init__(self, mapper: Mapper, fileformat: str):
+        self.mapper: Mapper = mapper
+        self.fileformat: str = fileformat
+        self._timeseries: pd.DataFrame    
 
     @property
     def timeseries(self) -> pd.DataFrame:
         return self._timeseries
 
     @abstractmethod
-    def load(self, path: str) -> None:
+    def load(self, path: Path) -> None:
         pass
 
     @abstractmethod
@@ -60,7 +60,7 @@ class Cycler(ABC):
 
 class Biologic(Cycler):
     def load(self, path):
-        mpr_file = BioLogic.MPRfile(path)
+        mpr_file = BioLogic.MPRfile(path.__str__())
         self._timeseries = pd.DataFrame(mpr_file.data)
         
     def parse(self):
@@ -72,6 +72,7 @@ class Biologic(Cycler):
 
 class Ivium(Cycler):
     """Credit to Andrew Wang."""
+    
     def load(self, path):
         
         self.raw_data = open(
@@ -80,7 +81,7 @@ class Ivium(Cycler):
         ).read().split("primary_data")[1].split("osc_data")[0].split("\n")
         
     def parse(self):
-        rows = []
+        rows = list()
 
         for candidate_row in self.raw_data:
             if np.size(candidate_row.split()) != 3:
@@ -92,9 +93,10 @@ class Ivium(Cycler):
             row = np.array(candidate_row.split()).astype(float)
             rows.append(row)
 
+        columns = [value for value in self.mapper.__dict__.values() if value is not None]
         self._timeseries = pd.DataFrame(
             data=rows,
-            columns=("time", "current", "voltage")
+            columns=columns
         )
         self._timeseries.set_index('time', inplace=True)
 
@@ -102,14 +104,14 @@ class Ivium(Cycler):
 
 
 class Neware(Cycler):
-    def load(self, id_):
-        self.anyware = Anyware()
-        self.anyware.set_paths(id_=id_)
-        query = self.anyware.get_query(fields=self.mapper.flip())        
-        self._timeseries = self.anyware.get(query=query)
+    """This is a stripped down version from the one we use on pithy."""
+
+    def load(self, path):
+        query: str = anyware.parse_query(self.mapper.flip())
+        self._timeseries = anyware.load(path=path, query=query)
 
     def parse(self):
-        self.anyware.fix_cycle(self._timeseries)
+        utils.fix_cycle(self._timeseries)
 
 
 class Squidstat(Cycler):

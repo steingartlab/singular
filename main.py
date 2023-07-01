@@ -1,4 +1,4 @@
-from src.implement import load
+from singular.implement import load
 
         
 def main():
@@ -11,7 +11,8 @@ def main():
         'neware': 'GM_GT_FR2_2023_05_04_1'
     }
 
-    for dummy_id in dummy_ids.values():
+    for cycler, dummy_id in dummy_ids.items():
+        print(cycler.upper())
         echem = load(id_=dummy_id)
         print(echem.info())
 

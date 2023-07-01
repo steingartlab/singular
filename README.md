@@ -11,6 +11,8 @@ To ameliorate this, we have this abstraction called `singular`. It achieves two 
 
 # How to use
 
+Create a `.env` with variable `base_directory` containing the absolute path to the root folder where all your data exists, e.g. `base_directory = '/Users/cleese/electrochem'`. It does not matter whether the data resides is nested; the code will search recursively through all subdirectories
+
 ```
 from src.implement import load
 
@@ -49,7 +51,7 @@ This is convenient as it makes rehashing code across different cyclers simpler. 
 
 (Other fields like `dQ/dV` could easily be added but ppl seem to have their personal preference for calculating it)
 
-### Other points
+### Other points  
 
 - It handles CC/CV/CCCV/OCP, *not* EIS
 - `neware`: For `id_`, it can either be the *anyware* ID (e.g. 230158-2-6-562) or the experiment ID (field “info” on anyware’s inspect).
@@ -73,7 +75,11 @@ This writer's opinionated opinion on how to handle electrochemical data is to pa
 - For both `biologic` and `ivium`, it will have the time column as time elapsed. For those, the absolute timestamps can be added after calling `singular.load(id_)`.
 
 
-## The code
+## TODOs
+
+As of 2023-06-30:
+
+- Current version relies on each cycler having different file endings. This works for now, but should probably change at some point
 
 
 > 🌸 I will do my absolute best to maintain this with backwards compatibility in mind. However, I assume no responsibility for code suddenly breaking in case I make changes. As such, and if you think you’ll use this heavily, it may be a good idea to fork the pithy script.
