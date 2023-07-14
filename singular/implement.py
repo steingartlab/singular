@@ -1,58 +1,35 @@
+"""Implementation of singular.
+
+To execute, call load(experiment_id).
+"""
+
+import inspect
 from pathlib import Path
 from typing import Callable, Tuple
 
 import pandas as pd
 
-from singular import singular, utils
+from singular.singular import Cycler
+from singular import cyclers, utils
 
 
-def biologic() -> singular.Cycler:
-    mapper = singular.Mapper(
-        time='time/s',
-        voltage='Ewe/V',
-        current='control/V/mA',
-        capacity='Q charge/discharge/mA.h',
-        cycle='half cycle'
-    )
-
-    return singular.Biologic(mapper=mapper, fileformat='mpr')
-
-
-def ivium() -> singular.Cycler:
-    mapper = singular.Mapper( 
-        time='time',
-        current='current',
-        voltage='voltage'
-    )
-
-    return singular.Ivium(mapper=mapper, fileformat='idf')
-
-
-def neware() -> singular.Cycler:
-    mapper = singular.Mapper(
-        time='unix_time',
-        voltage='test_vol',
-        current='test_cur',
-        cycle='cycle',
-        capacity='test_capchg',
-        dcapacity='test_capdchg'
-    )
-
-    return singular.Neware(mapper=mapper, fileformat='sqlite3')
-
-
-def squidstat() -> singular.Cycler:
-    mapper = singular.Mapper(
-        time='UTC Time (s)',
-        current='Current (A)',
-        voltage='Working Electrode (V)',
-        cycle='Repeats'
-    )
+initializer_objects = inspect.getmembers(cyclers, inspect.isfunction)
+initializers: tuple[Callable[[], Cycler], ...] = tuple(
+    func for _, func in initializer_objects
+)
     
-    return singular.Squidstat(mapper, fileformat='csv')
 
+def initialize(
+        initializers: tuple[Callable[[], Cycler], ...]) -> list[Cycler]:
+    """Initialize an instance of all cycler types.
 
-def initialize(initializers: tuple[Callable[[], singular.Cycler], ...]) -> list[singular.Cycler]:
+    Args:
+        initializers (tuple[Callable[[], singular.Cycler], ...]): A list of cycler objects.
+
+    Returns:
+        list[singular.Cycler]: All cyclers initialized.
+    """
+
     cyclers = list()
 
     for initializer in initializers:
@@ -61,9 +38,26 @@ def initialize(initializers: tuple[Callable[[], singular.Cycler], ...]) -> list[
     return cyclers
 
 
-def match_cycler(cyclers: tuple[Callable[[], singular.Cycler], ...], id_: str) -> Tuple[singular.Cycler, Path]:
+def match_cycler(cyclers_: tuple[Callable[[], Cycler], ...], id_: str) -> Tuple[Cycler, Path]:
+    """Search through directory (incl. subdirectories) for an experiment id (filename)
+    and match the fileending to a cycler.
 
-    for cycler in cyclers:
+    It's a little facile bc it assumes each cycler has its own filetype. At the time of
+    writing, it still holds up though. Will fix later if I add a cycler that breaks
+    this pattern, but si fractum non sit, noli id reficere.
+
+    Args:
+        cyclers_ (tuple[Callable[[], singular.Cycler], ...]): All cyclers initialized.
+        id_ (str): (Experiment) id. Should match filename in directory.
+
+    Raises:
+        FileNotFoundError: If file is not found!
+
+    Returns:
+        Tuple[singular.Cycler, Path]: 
+    """
+
+    for cycler in cyclers_:
         filename: str = f'{id_}.{cycler.fileformat}'
 
         try:
@@ -81,16 +75,17 @@ def match_cycler(cyclers: tuple[Callable[[], singular.Cycler], ...], id_: str) -
 
 
 def load(id_: str) -> pd.DataFrame:
+    """Wrapper for loading experiments.
+    
+    Args:
+        id_ (str): (Experiment) id. Should match filename in directory.
 
-    initializers: tuple[Callable[[], singular.Cycler], ...] = (
-        biologic,
-        ivium,
-        neware,
-        squidstat
-    )
-    cyclers: Tuple[singular.Cycler, ...] = initialize(initializers)
+    Returns:
+        pd.DataFrame: Timeseries in a standardized format.
+    """
 
-    cycler, path = match_cycler(cyclers=cyclers, id_=id_)
+    cyclers_: Tuple[Cycler, ...] = initialize(initializers)
+    cycler, path = match_cycler(cyclers_=cyclers_, id_=id_)
     cycler.load(path)
     cycler.parse()
 

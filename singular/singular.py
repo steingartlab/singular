@@ -1,7 +1,5 @@
-##Author: Gunnar
-##Date Started: 2023-06-26
-##Notes: Unified interface for loading any electrochemical timeseries.
-##Assumes non-neware data resides in labdaq. Just call load(id_).
+"""Unified interface for loading any electrochemical timeseries.
+Assumes non-neware data resides in labdaq."""
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -33,7 +31,8 @@ class Mapper:
 
 
 class Cycler(ABC):
-    """Base class for all cyclers, i.e. they should all follow this structure."""
+    """Base class for all cyclers, i.e. they all follow this structure."""
+
     def __init__(self, mapper: Mapper, fileformat: str):
         self.mapper: Mapper = mapper
         self.fileformat: str = fileformat
@@ -52,6 +51,8 @@ class Cycler(ABC):
         pass
 
     def _parse(self) -> None:
+        """Mutual parser used by >1 type of cycler."""
+
         columns: dict[str, str] = self.mapper.flip()
         self._timeseries = self._timeseries.filter(items=columns.keys())
         self._timeseries.rename(columns=columns, inplace=True)
@@ -66,8 +67,12 @@ class Biologic(Cycler):
     def parse(self):
         self._parse()
         self._timeseries['cycle'] //= 2
-        self._timeseries['dcapacity'] = self._timeseries['capacity'].apply(lambda x: x if x < 0 else 0)
-        self._timeseries['capacity'] = self._timeseries['capacity'].apply(lambda x: x if x > 0 else 0)
+        self._timeseries['dcapacity'] = self._timeseries['capacity'].apply(
+            lambda x: x if x < 0 else 0
+        )
+        self._timeseries['capacity'] = self._timeseries['capacity'].apply(
+            lambda x: x if x > 0 else 0
+        )
 
 
 class Ivium(Cycler):
@@ -93,7 +98,7 @@ class Ivium(Cycler):
             row = np.array(candidate_row.split()).astype(float)
             rows.append(row)
 
-        columns = [value for value in self.mapper.__dict__.values() if value is not None]
+        columns = [val for val in self.mapper.__dict__.values() if val is not None]
         self._timeseries = pd.DataFrame(
             data=rows,
             columns=columns

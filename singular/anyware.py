@@ -4,13 +4,15 @@ import sqlite3
 
 import pandas as pd
 
-from typing import Optional, Union
+from typing import NewType, Optional, Union
 
 TABLE = 'test'
 
+AnywareFields = NewType('Columns', Union[dict[str, str], list[str]])
+
 
 def _parse(fields: Union[dict[str, str], list]) -> str:
-    """Parses fields to query string.
+    """Parse fields to query string.
 
     Args:
         fields (Union[dict[str, str], list]): See get_query().
@@ -51,6 +53,8 @@ def load(path, query: str, time_col: str = 'time') -> pd.DataFrame:
     
     Args:
         query_ (str): Query string.
+        time_col (str, optional): The time column name.
+            Defaults to 'time'.
     
     Returns:
         pd.DataFrame: Dataframe of queried data.
@@ -74,7 +78,7 @@ def load(path, query: str, time_col: str = 'time') -> pd.DataFrame:
     return echem
 
 
-def parse_query(fields: Optional[Union[dict[str, str], list[str]]] = None, subsampling_factor: Optional[int] = None) -> str:
+def parse_query(fields: Optional[AnywareFields] = None, subsampling_factor: Optional[int] = None) -> str:
     """Generates query string for anyware.
 
     Selects columns from anyware table. Optionally subsamples.
