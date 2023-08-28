@@ -7,11 +7,13 @@ At Club Steingart and CEEC we are so fortunate to have access to pretty much eve
 To ameliorate this, we have this abstraction called `singular`. It achieves two things:
 
 1. A single function to load *all* electrochemical cycling data
-2. Standardized contents
+2. Standardized contents, cue a mandatory [xcxd](https://xkcd.com/927/) reference:
+    ![](https://imgs.xkcd.com/comics/standards_2x.png)
+
 
 # How to use
 
-Create a `config.json` with variable `base_directory` containing the absolute path to the root folder where all your data exists, e.g. `"base_directory": "/Users/cleese/electrochem"`. It does not matter whether the data sits in a subdirectory—the code will search recursively through all subdirectories.
+Create a `config.json` with variable `base_directory` containing the absolute path to the root folder where all your data exists, e.g. `"base_directory": "/Users/cleese/electrochem"`. It does not matter whether the data sits in a nested folder—the code will search recursively through all subdirectories.
 
 ```
 from singular.implement import load
