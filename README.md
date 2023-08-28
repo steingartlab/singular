@@ -7,7 +7,7 @@ At Club Steingart and CEEC we are so fortunate to have access to pretty much eve
 To ameliorate this, we have this abstraction called `singular`. It achieves two things:
 
 1. A single function to load *all* electrochemical cycling data
-2. Standardized contents, cue a mandatory [xcxd](https://xkcd.com/927/) reference:
+2. Standardized contents, cue a mandatory [xkcd](https://xkcd.com/927/) reference:
     ![](https://imgs.xkcd.com/comics/standards_2x.png)
 
 
