@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 
 
-with open('config.json', 'r') as file:
-    config = json.load(file)
+# with open('config.json', 'r') as file:
+#     config = json.load(file)
 
-base_directory: str = config['base_directory']
+base_directory: str = 'data'
 
 
 def find_experiment(filename: str) -> Path:
