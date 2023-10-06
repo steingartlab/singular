@@ -13,7 +13,7 @@ setup(
         'galvani',
         'numpy',
         'pandas',
-        'pytest'
+        'pytest',
         'Requests',
     ],
     classifiers=[
