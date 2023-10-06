@@ -1,5 +1,0 @@
-galvani==0.2.1
-numpy==1.25.0
-pandas==2.0.2
-pytest==7.4.0
-Requests==2.31.0
