@@ -8,7 +8,8 @@ To ameliorate this, we have this abstraction called `singular`. It achieves two 
 
 1. A single function to load *all* electrochemical cycling data
 2. Standardized contents, cue a mandatory [xkcd](https://xkcd.com/927/) reference:
-    <img src="https://imgs.xkcd.com/comics/standards_2x.png" width="400" height="300">
+   
+    <img src="https://imgs.xkcd.com/comics/standards_2x.png" width="450">
 
 
 # How to use
